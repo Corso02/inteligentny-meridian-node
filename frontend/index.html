@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ovládanie Meridian</title>
+    <link rel="stylesheet" href="style/common_styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="./scripts/index.js" defer></script>
+</head>
+<body>
+    <!-- admin:adminHeslo          test:pouzivatel -->
+    <header>
+        <h1>Meridian IoT</h1>
+    </header>
+    <main>
+        <div class="data_from_grafana">
+            <div class="measurment">
+                <h4>Aktuálna teplota</h4>
+                <p>28°C</p>
+            </div>
+            <div class="measurment">
+                <h4>Aktuálna intezita svetla</h4>
+                <p>XYZ</p>
+            </div>
+            <div class="measurment">
+                <h4>Naposledy sa dvere otvorili:</h4>
+                <p>5.1.2024</p>
+            </div>
+        </div>
+        <button id="test_mqtt">Test mqtt</button>
+    </main>
+    <footer>
+        <p>Created by ŠtyriaPlusPes</p>
+    </footer>
+</body>
+</html>
