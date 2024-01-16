@@ -15,14 +15,18 @@ body header {
   align-items: center;
   justify-content: space-between;
 }
-body header p {
+body header p, body header a {
   justify-self: end;
   opacity: 0.8;
   transition: 0.5s;
+  margin: 0 5px;
 }
-body header p:hover {
+body header p:hover, body header a:hover {
   opacity: 1;
   cursor: pointer;
+}
+body header .nav {
+  display: flex;
 }
 body footer {
   background-color: dodgerblue;

@@ -13,14 +13,18 @@ body{
         display: flex;
         align-items: center;
         justify-content: space-between;
-        p{
+        p,a{
             justify-self: end;
             opacity: .8;
             transition: .5s;
+            margin: 0 5px;
             &:hover{
                 opacity: 1;
                 cursor: pointer;
             }
+        }
+        .nav{
+            display: flex;
         }
     }
     footer{

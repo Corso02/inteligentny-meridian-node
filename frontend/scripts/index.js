@@ -6,9 +6,6 @@ let logoutBtn = document.getElementById("logout_btn")
 if(loginBtn)
 	loginBtn.addEventListener("click", handle_login_btn_click)
 
-if(logoutBtn)
-	logoutBtn.addEventListener("click", handle_logout_btn_click)
-
 
 
 async function testConn(){
@@ -56,20 +53,18 @@ async function handle_login_btn_click(){
 	if (formValues) {
     	let name = formValues[0]
 		let password = formValues[1]
-		let login = true
 
 		let req_body = {
-			login,
 			name,
 			password
 		}
 
-		req_body = Object.entries(req_body).map(([key,value]) => `${key}=${value}`).join("&")
+		//req_body = Object.entries(req_body).map(([key,value]) => `${key}=${value}`).join("&")
 
-        const res = await fetch("../backend/API.php", {
+        const res = await fetch(`${server_url}/user/login`, {
             method: "POST",
-            headers: {"Content-type": "application/x-www-form-urlencoded; charset=UTF-8"},
-            body: req_body
+            headers: {"Content-type": "application/json; charset=UTF-8"},
+            body: JSON.stringify(req_body)
         })
 
 		const ans = await res.json()
@@ -81,21 +76,50 @@ async function handle_login_btn_click(){
 			})
 		}
 		else{
-			location.reload()
+			let login_btn = document.getElementById("login_btn")
+			login_btn.innerHTML = "Odhlásiť sa"
+			login_btn.removeEventListener("click", handle_login_btn_click)
+			login_btn.addEventListener("click", handle_logout_btn_click)
+			
+			Cookies.set("loggedIn", true)
+
+			if(ans.is_admin){
+				console.log("JE TO ADMIN")
+				Cookies.set('isAdmin', true)
+				addAdminPanelButton()
+			}
+			else{
+				console.log("NIE JE TO ADMIN")
+				Cookies.set("isAdmin", false)
+			}
 		}
 
     }
 }
 
 async function handle_logout_btn_click(){
-	let req_body = "logout=true"
-	const res = await fetch("../backend/API.php", {
-		method: "POST",
-		headers: {"Content-type": "application/x-www-form-urlencoded; charset=UTF-8"},
-		body: req_body
-	})
-	location.reload()
+	Cookies.set("loggedIn", false)
+	Cookies.set("isAdmin", false)
+	
+	let login_btn = document.getElementById("login_btn")
+	login_btn.innerHTML = "Prihlásiť sa"
+	login_btn.removeEventListener("click", handle_logout_btn_click)
+	login_btn.addEventListener("click", handle_login_btn_click)
+	removeAdminPanelButton()
+}
 
+function addAdminPanelButton(){
+	let adminPanelBtn = document.createElement("a")
+	adminPanelBtn.setAttribute("id", "admin_panel_btn")
+	adminPanelBtn.innerHTML = "Admin panel"
+	document.getElementById("login_btn").parentNode.insertBefore(adminPanelBtn, document.getElementById("login_btn"))
+}
+
+function removeAdminPanelButton(){
+	let admin_panel_btn = document.getElementById("admin_panel_btn")
+	if(admin_panel_btn){
+		admin_panel_btn.remove()
+	}
 }
 
 document.getElementById("test_mqtt").addEventListener("click", async () => {
@@ -128,3 +152,4 @@ document.getElementById("test_mqtt").addEventListener("click", async () => {
 	}
 
 })
+

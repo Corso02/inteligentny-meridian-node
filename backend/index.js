@@ -3,14 +3,15 @@ const MqttHandler = require("./mqtt_handler")
 const express = require("express")
 const bodyParser = require("body-parser")
 const cors = require("cors")
+const Database = require("./database")
 
 const app = express()
+
+const db = new Database()
 
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended: true}))
 app.use(cors())
-
-
 
 let topics = ["gw_to_express", "current_values"]
 topics = topics.map(topic => `${process.env.MQTT_RECIEVE_PREFIX}/${topic}`)
@@ -28,6 +29,11 @@ app.post("/mqtt_test", (req, res) => {
 app.get("/current_values", (req, res) => {
     mqttClient.sendMessage(`${process.env.MQTT_SEND_PREFIX}/meassure_current_values`, "")
     mqttClient.setResponseObj(res)
+})
+
+app.post("/user/login", async (req, res) => {
+    let { name, password } = req.body
+    db.checkCredential(name, password, res)
 })
 
 
