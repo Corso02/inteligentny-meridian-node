@@ -1,11 +1,12 @@
 const mqtt = require('mqtt');
 
 class MqttHandler {
-  constructor(host, username, password) {
+  constructor(host, username, password, topics) {
     this.mqttClient = "styriaPlusPes";
     this.host = host;
     this.username = username; // mqtt credentials if these are needed to connect
     this.password = password;
+    this.topics = topics
   }
   
   connect() {
@@ -24,11 +25,16 @@ class MqttHandler {
     });
 
     // mqtt subscriptions
-    this.mqttClient.subscribe('mytopic', {qos: 0});
+    if(this.topics){
+        for(let i = 0; i < this.topics.length; i++){
+            this.mqttClient.subscribe(this.topics[i], {qos: 0})
+        }
+    }
 
     // When a message arrives, console.log it
     this.mqttClient.on('message', function (topic, message) {
-      console.log(message.toString());
+        console.log(topic.toString())
+        console.log(message.toString())
     });
 
     this.mqttClient.on('close', () => {
