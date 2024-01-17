@@ -30,6 +30,7 @@ class MqttHandler {
 		// Connection callback
 		this.mqttClient.on('connect', () => {
 			console.log(`mqtt client connected`);
+			this.logger.log("info" ,"Mqtt client connected")
 		});
 
 		// mqtt subscriptions
@@ -41,6 +42,7 @@ class MqttHandler {
 
 		// When a message arrives, console.log it
 		this.mqttClient.on('message', (topic, message) => {
+			this.logger.log("info", `MQTT message recieved on topic ${topic.toString()}`)
 			if(topic.toString() === `${process.env.MQTT_RECIEVE_PREFIX}/current_values`){
 				this.handleCurrValues(message)
 			}

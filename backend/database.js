@@ -7,6 +7,7 @@ class Database{
         //console.log(path.resolve(__dirname, "database.sqlite"))
         this.db = new sqlite.Database(path.resolve(__dirname, "database.sqlite"), err => {
             if(err) this.logger.log("error", "Error with opening db")
+            else this.logger.log("info", "DB opened")
         })
         this.logger = logger
     }
