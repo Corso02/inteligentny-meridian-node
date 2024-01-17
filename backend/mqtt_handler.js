@@ -1,7 +1,8 @@
 const mqtt = require('mqtt');
+const Database = require('./database');
 
 class MqttHandler {
-	constructor(host, username, password, topics) {
+	constructor(host, username, password, topics, logger) {
 		this.mqttClient = "styriaPlusPes";
 		this.host = host;
 		this.username = username; // mqtt credentials if these are needed to connect
@@ -13,6 +14,7 @@ class MqttHandler {
 		this.door_checked = false */
 		this.sensor_count = 3
 		this.http_response = null
+		this.logger = logger
 	}
   
 	connect() {
@@ -21,7 +23,7 @@ class MqttHandler {
 
 		// Mqtt error calback
 		this.mqttClient.on('error', (err) => {
-			console.log(err);
+			this.logger.error(`Mqtt Error ${err}`)
 			this.mqttClient.end();
 		});
 
@@ -42,7 +44,10 @@ class MqttHandler {
 			if(topic.toString() === `${process.env.MQTT_RECIEVE_PREFIX}/current_values`){
 				this.handleCurrValues(message)
 			}
-			//console.log(message.toString())
+			if(topic.toString() === `${process.env.MQTT_RECIEVE_PREFIX}/check_card`){
+				const { cardId } = JSON.parse(message.toString())
+				this.handleCheckCard(cardId)
+			}
 		});
 
 		this.mqttClient.on('close', () => {
@@ -63,6 +68,13 @@ class MqttHandler {
 			this.curr_values_arr = new Array()
 			this.http_response = null
 		}
+	}
+
+	handleCheckCard(cardId){
+		let db = new Database(this.logger)
+	 	db.checkCardId(cardId, this.mqttClient)
+		
+		db.closeConn()
 	}
 
   	setResponseObj(obj){
