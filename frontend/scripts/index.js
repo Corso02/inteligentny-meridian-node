@@ -122,6 +122,28 @@ function removeAdminPanelButton(){
 	}
 }
 
+/*
+
+<li class="nav-item">
+    <p class="nav-link">Preferencie</p>
+</li>
+
+
+*/
+
+function addPrefsButton(){
+	let prefsContainer = document.createElement("li")
+	prefsContainer.setAttribute("class", "nav-item")
+	prefsContainer.setAttribute("id", "pref_container")
+	let text = document.createElement("p")
+	text.setAttribute("class", "nav-link")
+	
+}
+
+function removePrefsButton(){
+
+}
+
 document.getElementById("test_mqtt").addEventListener("click", async () => {
 	console.log("test")
 

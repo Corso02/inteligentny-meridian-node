@@ -8,14 +8,24 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.5/dist/js.cookie.min.js"></script>
     <script src="./scripts/index.js" defer></script>
+    <script src="./scripts/common_scripts.js" defer></script>
 </head>
 <body>
     <!-- admin:adminHeslo          test:pouzivatel -->
     <header>
-        <h1>Meridian IoT</h1>
-        <div class="nav">
-            <p id="login_btn">Prihlásiť sa</p>
-        </div>
+        <nav class="navbar">
+            <h1>Meridian IoT</h1>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <p id="login_btn" class="nav-link">Prihlásiť sa</p>
+                </li>
+            </ul>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </nav>
     </header>
     <main>
         <div class="data_from_grafana">

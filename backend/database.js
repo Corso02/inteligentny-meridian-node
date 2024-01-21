@@ -21,7 +21,7 @@ class Database{
                 res.json({success: false})
             }
             else{
-                res.json({success: true, is_admin: row.is_admin})
+                res.json({success: true, is_admin: row.is_admin, user_id: row.user_id})
             }
         })
         statement.finalize()
@@ -37,7 +37,7 @@ class Database{
                     this.logger.log("error", "No user found with given card")
                 else
                     this.logger.log("error", "Error in statement checkCardId")
-                mqttClient.publish(`${process.env.MQTT_SEND_PREFIX}/cardId/res`, JSON.stringify({success: false}))
+                mqttClient.publish(`${process.env.MQTT_SEND_PREFIX}/temperature/res/set`, JSON.stringify({success: false}))
             }
             else{
                 this.getUserPreferences(row.user_id, mqttClient)        
@@ -46,18 +46,24 @@ class Database{
         statement.finalize()
     }
 
-    getUserPreferences(userId, mqttClient){
+    getUserPreferences(userId, mqttClient, res){
         let statement = this.db.prepare("SELECT * FROM preferences where user_id = :userId", [userId], err => {
             if(err) this.logger.log("error", "Error for prepare statement getUserPreferences")
         })
         statement.get((err, row) => {
             if(err || !row){
                 this.logger.log("error", "Error in statement prefs")
-                mqttClient.publish(`${process.env.MQTT_SEND_PREFIX}/cardId/res`, JSON.stringify({success: false}))
+                if(mqttClient)
+                    mqttClient.publish(`${process.env.MQTT_SEND_PREFIX}/temperature/res/set`, JSON.stringify({success: false}))
+                else if(res)
+                    res.status(500).json({success: false})
             }
             else{
                 const { min_temp, max_temp, min_light } = row
-                mqttClient.publish(`${process.env.MQTT_SEND_PREFIX}/cardId/res`, JSON.stringify({success: true, min_temp, max_temp, min_light}))
+                if(mqttClient)
+                    mqttClient.publish(`${process.env.MQTT_SEND_PREFIX}/temperature/res/set`, JSON.stringify({success: true, min_temp, max_temp, min_light}))
+                else if(res)
+                    res.status(200).json({success: true, min_temp, max_temp, min_light})
             }
         })
         statement.finalize()

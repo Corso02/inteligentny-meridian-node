@@ -5,6 +5,7 @@ const bodyParser = require("body-parser")
 const cors = require("cors")
 const Database = require("./database")
 const winston = require("winston")
+const InfluxDbHandler = require("./influxdb")
 
 const logger = winston.createLogger({
     level: "info",
@@ -21,17 +22,17 @@ const app = express()
 
 const db = new Database(logger)
 
-
+const influxdb = new InfluxDbHandler(process.env.INFLUX_URL, process.env.INFLUX_API_TOKEN, process.env.INFLUX_ORG, process.env.INFLUX_BUCKET)
 
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended: true}))
 app.use(cors())
 
-let topics = ["gw_to_express", "current_values", "check_card"]
+let topics = ["check_card"]
 topics = topics.map(topic => `${process.env.MQTT_RECIEVE_PREFIX}/${topic}`)
 
 let mqttClient = new MqttHandler(process.env.MQTT_URL, process.env.MQTT_NAME, process.env.MQTT_PASSWORD, topics, logger)
-mqttClient.connect()
+//mqttClient.connect()
 
 app.get("/", (req,res) => {
     res.status(200).send("Pripojeny")
@@ -53,6 +54,19 @@ app.post("/user/login", async (req, res) => {
     logger.info("Recieved request on /user/login")
     let { name, password } = req.body
     db.checkCredential(name, password, res)
+})
+
+app.get("/influx", (req, res) => {
+    influxdb.testQuery()
+    res.status(200).send("hehehe")
+})
+
+app.get("/admin/get_panel_values", (req, res) => {
+    influxdb.getValuesForAdminPanel(res)
+})
+
+app.post("/user/get_prefs", (req, res) => {
+    db.getUserPreferences(req.body.user_id, null, res)
 })
 
 
