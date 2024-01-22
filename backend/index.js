@@ -69,5 +69,9 @@ app.post("/user/get_prefs", (req, res) => {
     db.getUserPreferences(req.body.user_id, null, res)
 })
 
+app.post("/user/save_prefs", (req, res) => {
+    db.checkUserPrefsExists(req.body.user_id, req.body.prefs, res)
+})
+
 
 let server = app.listen(process.env.EXPRESS_PORT, () => console.log(`Backend running on port ${process.env.EXPRESS_PORT}`))

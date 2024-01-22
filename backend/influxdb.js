@@ -51,6 +51,23 @@ class InfluxDbHandler{
         }
         res.status(200).json(JSON.stringify(res_body))
     }
+
+    getRooms(res){
+        const query = "from(bucket: \"Metrics\")\
+        |> distinct(column: 'room')"
+        this.queryApi.queryRows(query, {
+            next(row, tableMeta){
+                const o = tableMeta.toObject(row)
+                console.log(o)
+            },
+            complete(){
+                console.log('FINISHED')
+            },
+            error(error){
+                console.log('QUERY FAILED', error)
+            }
+        })
+    }
 }
 
 module.exports = InfluxDbHandler
