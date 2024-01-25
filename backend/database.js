@@ -59,11 +59,11 @@ class Database{
                     res.status(404).json({success: false})
             }
             else{
-                const { min_temp, max_temp, min_light } = row
+                const { min_temp, max_temp, min_light, email, send_alerts, send_all_alerts } = row
                 if(mqttClient)
                     mqttClient.publish(`${process.env.MQTT_SEND_PREFIX}/temperature/res/set`, JSON.stringify({success: true, min_temp, max_temp, min_light}))
                 else if(res)
-                    res.status(200).json({success: true, min_temp, max_temp, min_light})
+                    res.status(200).json({success: true, min_temp, max_temp, min_light, email, send_alerts, send_all_alerts})
             }
         })
         statement.finalize()
@@ -132,9 +132,109 @@ class Database{
                 res.sendStatus(500)
             }
             else{
-                res.sendStatus(200)
+                res.status(200).json({success: true})
                 statement.finalize()
             }
+        })
+    }
+
+    checkIfUserExists(name, password, card_id, res){
+        let statement = this.db.prepare("SELECT * FROM users WHERE user_name = :name", [name], (err) => {
+            if(err){
+                this.logger.log("error", "error preparing statement checkIfUserExists")
+            }
+        })
+        statement.get((err, row) => {
+            if(err || row){
+                res.status(200).json({success: false, reason: "already exists"})
+            }
+            else this.registerUser(name, password, card_id, res)
+        })
+
+    }
+
+    registerUser(name, password, card_id, res){
+        let hashedPassword = crypto.createHash("sha256").update(password).digest("hex").toString()
+        let statement = this.db.prepare("INSERT into users (user_name, user_password, is_admin, card_id) VALUES (:name, :password, :admin, :card_id)", [name, hashedPassword, 0, card_id], (err) => {
+            if(err){
+                this.logger.log("error", "error preparing statement registerUser")
+                console.log(err)
+                res.status(200).json({success: false, reason: "server error"})
+            }
+        })
+        statement.run((err) => {
+            if(err){
+                this.logger.log("error", "error inserting new user")
+                res.status(200).json({success: false, reason: "server error"})
+            }
+            else{
+                this.createPrefsForNewUser(name, res)
+            }
+        })
+    }
+
+    createPrefsForNewUser(name, res){
+        let statement = this.db.prepare("SELECT user_id FROM users where user_name = :name", [name], (err) => {
+            if(err){
+                this.logger.log("error", "error preparing statement createPrefsForNewUser")
+                res.status(200).json({success: false, reason: "prefs error"})
+            }
+        })
+        statement.get((err, row) => {
+            if(err || !row){
+                this.logger.log("error", "error running statement to get user_id in createPrefsForNewUser")
+                res.status(200).json({success: false, reason: "prefs error"})
+            }
+            else{
+                const { user_id } = row
+                this.saveUserPrefs(user_id, {min_light: 50, min_temp: 21, max_temp: 25, email: "", alerts: false, allAlerts: false}, res, false)
+            }
+        })
+    }
+
+    getAllUsers(res){
+        this.db.all("SELECT user_name, user_id FROM users where is_admin = 0", (err, row) => {
+            if(err){
+                this.logger.log("error", "error running getAllUsers")
+                res.status(200).json({success: false})
+            }
+            else{
+                res.status(200).json({success: true, row})
+            }
+        })
+    }
+
+    deleteUser(user_id, res){
+        let statement = this.db.prepare("DELETE FROM users WHERE user_id = :id", [user_id], (err) => {
+            if(err){
+                this.logger.log("error", "error prepare statement deleteUser")
+                res.status(200).json({success: false})
+            }
+        })
+        statement.run(err => {
+            if(err){
+                this.logger.log("error", "error deleting user")
+                res.status(200).json({success: false})
+            }
+            else
+                res.status(200).json({success: true})
+        })
+    }
+
+    changeUserCard(user_id, card_num, res){
+        let statement = this.db.prepare("UPDATE users SET card_id = :card WHERE user_id = :id", [card_num, user_id], (err) => {
+            if(err){ 
+                this.logger.log("error", "error preparing statement changeUserCard")
+                res.status(200).json({success: false})
+            }
+        })
+        statement.run(err => {
+            if(err){
+                this.logger.log("error", "error running statement changeUserCard")
+                res.status(200).json({success: false})
+            }
+            else
+                res.status(200).json({success: true})
         })
     }
 

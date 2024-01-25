@@ -6,6 +6,7 @@ const cors = require("cors")
 const Database = require("./database")
 const winston = require("winston")
 const InfluxDbHandler = require("./influxdb")
+const mailSender = require("./email")
 
 const logger = winston.createLogger({
     level: "info",
@@ -28,11 +29,11 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended: true}))
 app.use(cors())
 
-let topics = ["check_card"]
+let topics = ["rfid/check_card"]
 topics = topics.map(topic => `${process.env.MQTT_RECIEVE_PREFIX}/${topic}`)
 
 let mqttClient = new MqttHandler(process.env.MQTT_URL, process.env.MQTT_NAME, process.env.MQTT_PASSWORD, topics, logger)
-//mqttClient.connect()
+mqttClient.connect()
 
 app.get("/", (req,res) => {
     res.status(200).send("Pripojeny")
@@ -71,6 +72,28 @@ app.post("/user/get_prefs", (req, res) => {
 
 app.post("/user/save_prefs", (req, res) => {
     db.checkUserPrefsExists(req.body.user_id, req.body.prefs, res)
+})
+
+app.get("/rooms", (req, res) => {
+    influxdb.getRooms(res)
+})
+
+app.post("/user/register", (req, res) => {
+    let { name, password, card_id } = req.body
+    db.checkIfUserExists(name, password, card_id, res)
+})
+
+app.get("/user/getAll", (req, res) => {
+    db.getAllUsers(res)
+})
+
+app.post("/user/delete", (req, res) => {
+    db.deleteUser(req.body.user_id, res)
+})
+
+app.post("/user/changeCard", (req, res) => {
+    const { user_id, card_num } = req.body
+    db.changeUserCard(user_id, card_num, res)
 })
 
 

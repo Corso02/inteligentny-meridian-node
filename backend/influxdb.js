@@ -53,7 +53,7 @@ class InfluxDbHandler{
     }
 
     getRooms(res){
-        const query = "from(bucket: \"Metrics\")\
+       /*  const query = "from(bucket: \"Metrics\")\
         |> distinct(column: 'room')"
         this.queryApi.queryRows(query, {
             next(row, tableMeta){
@@ -66,7 +66,11 @@ class InfluxDbHandler{
             error(error){
                 console.log('QUERY FAILED', error)
             }
-        })
+        }) */
+        let rooms = {rooms:['abydoss', 'caprica', 'dune', 'endor', 'hyperion', 'kronos', 'meridian', 'romulus', 'solaris', 'vulcan']}
+
+        res.status(200).json(JSON.stringify(rooms))
+
     }
 }
 
